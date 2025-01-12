@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="index.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="login-body">
+  <div id="login-container">
+    <img src="./assets/hydra.png" alt="Profile Photo" id="profile-photo">
+    <div class="input-container">
+      <input type="text" id="username" placeholder="Username">
+      <i class="material-icons">person</i>
+    </div>
+    <div class="input-container">
+      <input type="password" id="password" placeholder="Password">
+      <i class="material-icons" id="toggle-password">visibility_off</i>
+    </div>
+    <button id="login-btn1"><a href="./index.html">Login</a> </button>
+    <p id="register-link">Don't have an account? <a href="register.html">Register</a></p>
+  </div>
+
+  <script>
+    // Toggle password visibility
+    const togglePassword = document.getElementById('toggle-password');
+    const passwordInput = document.getElementById('password');
+    togglePassword.addEventListener('click', () => {
+      const isPasswordVisible = passwordInput.type === 'text';
+      passwordInput.type = isPasswordVisible ? 'password' : 'text';
+      togglePassword.textContent = isPasswordVisible ? 'visibility_off' : 'visibility';
+    });
+
+    // Handle login
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        alert('Please fill in both fields');
+        return;
+      }
+
+      // Perform login logic
+      window.electron.checkUser(username, password)
+        .then(result => {
+          if (result.success) {
+            alert('Login successful');
+            window.location.href = './index.html'; // Redirect to main page
+          } else {
+            alert(result.message);
+          }
+        })
+        .catch(error => {
+          alert('Error: ' + error);
+        });
+    });
+  </script>
+</body>
+</html>

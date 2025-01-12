@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hydra - Hacking Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto Mono', monospace;
+      background-color: #121212;
+      color: #ffffff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #1f1f1f;
+      padding: 10px 20px;
+      border-bottom: 1px solid #333;
+    }
+
+    .navbar .logo {
+      font-size: 1.5rem;
+      color: #00bcd4;
+    }
+
+    .navbar .controls {
+      display: flex;
+      gap: 15px;
+    }
+
+    .navbar .controls button {
+      background-color: #333;
+      border: none;
+      padding: 5px 10px;
+      color: #00bcd4;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background-color 0.3s;
+    }
+
+    .navbar .controls button:hover {
+      background-color: #00bcd4;
+      color: #121212;
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: #1f1f1f;
+      border-right: 1px solid #333;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar button {
+      background-color: #333;
+      border: none;
+      padding: 10px;
+      color: #00bcd4;
+      cursor: pointer;
+      border-radius: 3px;
+      text-align: left;
+      transition: background-color 0.3s;
+    }
+
+    .sidebar button:hover {
+      background-color: #00bcd4;
+      color: #121212;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .system-info {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+      background-color: #1f1f1f;
+      border-bottom: 1px solid #333;
+    }
+
+    .system-info .info-box {
+      text-align: center;
+    }
+
+    .system-info .info-box .title {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+
+    .system-info .info-box .value {
+      font-size: 1.2rem;
+      color: #00bcd4;
+    }
+
+    .terminal {
+      flex: 1;
+      background-color: #121212;
+      padding: 20px;
+      color: #00bcd4;
+      overflow-y: auto;
+      font-size: 1rem;
+      position: relative;
+    }
+
+    .terminal .output-area {
+      white-space: pre-wrap;
+    }
+
+    .terminal .input-area {
+      display: flex;
+      margin-top: 10px;
+      position: sticky;
+      bottom: 0;
+    }
+
+    .terminal .input-area input {
+      flex: 1;
+      background-color: #1f1f1f;
+      border: none;
+      padding: 10px;
+      color: #00bcd4;
+      border-radius: 3px;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .terminal .input-area button {
+      background-color: #333;
+      border: none;
+      padding: 10px;
+      margin-left: 10px;
+      color: #00bcd4;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background-color 0.3s;
+    }
+
+    .terminal .input-area button:hover {
+      background-color: #00bcd4;
+      color: #121212;
+    }
+
+    .virtual-keyboard button {
+      width: 50px;
+      height: 50px;
+      background-color: #333;
+      border: none;
+      color: #00bcd4;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .virtual-keyboard {
+      display: grid;
+      grid-template-columns: repeat(14, 1fr);
+      /* 14 keys in each row */
+      gap: 5px;
+      max-width: 100%;
+      margin: auto;
+      padding: 20px;
+      background-color: #1a1a1a;
+      border-radius: 10px;
+      width: 600px;
+      /* You can adjust the width as needed */
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .key {
+      padding: 15px;
+      font-size: 18px;
+      margin-top: 7px;
+      background-color: #333;
+      color: white;
+      border: 2px solid #444;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .key:hover {
+      background-color: #555;
+      transform: scale(1.1);
+    }
+
+    .key:active {
+      background-color: #777;
+      transform: scale(1);
+    }
+
+    /* Special key sizes */
+    .key:contains('SHIFT'),
+    .key:contains('CTRL'),
+    .key:contains('ALT'),
+    .key:contains('ENTER') {
+      grid-column: span 2;
+      /* These keys take up two spaces */
+    }
+
+    .key:contains('SPACE') {
+      grid-column: span 4;
+      /* Spacebar takes up four spaces */
+    }
+
+    /* Style for modifier keys like CAPS */
+    .key:contains('CAPS') {
+      grid-column: span 2;
+    }
+
+    .virtual-keyboard button:hover {
+      background-color: #00bcd4;
+      color: #121212;
+    }
+
+    .footer {
+      background-color: #1f1f1f;
+      text-align: center;
+      padding: 10px;
+      border-top: 1px solid #333;
+    }
+
+    .footer a {
+      color: #00bcd4;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="navbar">
+    <div class="logo">Hydra</div>
+    <div class="controls">
+      <button>Settings</button>
+      <button>Help</button>
+      <button href="./login.html">Logout</button>
+    </div>
+  </div>
+  <div class="main-container">
+    <div class="sidebar">
+      <button>Dashboard</button>
+      <button>Terminal</button>
+      <button>Network Info</button>
+      <button>System Logs</button>
+    </div>
+    <div class="content">
+      <div class="system-info">
+        <div class="info-box">
+          <div class="title">CPU Usage</div>
+          <div class="value">45%</div>
+        </div>
+        <div class="info-box">
+          <div class="title">Disk Usage</div>
+          <div class="value">70%</div>
+        </div>
+        <div class="info-box">
+          <div class="title">Network Traffic</div>
+          <div class="value">120kbps</div>
+        </div>
+      </div>
+      <div class="terminal">
+        <div class="output-area">
+          Welcome to Hydra Simulator.
+        </div>
+        <div class="input-area">
+          <input type="text" placeholder="Enter command here...">
+          <button>Run</button>
+        </div>
+      </div>
+
+      <!-- Globe Container -->
+      <div class="globe-container">
+        <div id="globe"></div>
+      </div>
+
+      <!-- Network Scanner -->
+      <div class="network-scanner">
+        <h3>Network Scanner</h3>
+        <button id="scan-network">Scan Local Network</button>
+        <div id="network-results">
+          <p><strong>Scan Results:</strong></p>
+          <ul id="devices-list"></ul>
+        </div>
+      </div>
+
+      <!-- Virtual Keyboard -->
+      <div class="-virtual-keyboard">
+        <button class="key">ESC</button>
+        <button class="key">F1</button>
+        <button class="key">F2</button>
+        <button class="key">F3</button>
+        <button class="key">F4</button>
+        <button class="key">F5</button>
+        <button class="key">F6</button>
+        <button class="key">F7</button>
+        <button class="key">F8</button>
+        <button class="key">F9</button>
+        <button class="key">F10</button>
+        <button class="key">F11</button>
+        <button class="key">F12</button>
+        <button class="key">`</button>
+        <button class="key">1</button>
+        <button class="key">2</button>
+        <button class="key">3</button>
+        <button class="key">4</button>
+        <button class="key">5</button>
+        <button class="key">6</button>
+        <button class="key">7</button>
+        <button class="key">8</button>
+        <button class="key">9</button>
+        <button class="key">0</button>
+        <button class="key">-</button>
+        <button class="key">=</button>
+        <button class="key">BACK</button>
+        <button class="key">TAB</button>
+        <button class="key">Q</button>
+        <button class="key">W</button>
+        <button class="key">E</button>
+        <button class="key">R</button>
+        <button class="key">T</button>
+        <button class="key">Y</button>
+        <button class="key">U</button>
+        <button class="key">I</button>
+        <button class="key">O</button>
+        <button class="key">P</button>
+        <button class="key">[</button>
+        <button class="key">]</button>
+        <button class="key">\</button>
+        <button class="key">CAPS</button>
+        <button class="key">A</button>
+        <button class="key">S</button>
+        <button class="key">D</button>
+        <button class="key">F</button>
+        <button class="key">G</button>
+        <button class="key">H</button>
+        <button class="key">J</button>
+        <button class="key">K</button>
+        <button class="key">L</button>
+        <button class="key">;</button>
+        <button class="key">'</button>
+        <button class="key">ENTER</button>
+        <button class="key">SHIFT</button>
+        <button class="key">Z</button>
+        <button class="key">X</button>
+        <button class="key">C</button>
+        <button class="key">V</button>
+        <button class="key">B</button>
+        <button class="key">N</button>
+        <button class="key">M</button>
+        <button class="key">,</button>
+        <button class="key">.</button>
+        <button class="key">/</button>
+        <button class="key">SHIFT</button>
+        <button class="key">CTRL</button>
+        <button class="key">WIN</button>
+        <button class="key">ALT</button>
+        <button class="key">SPACE</button>
+        <button class="key">ALT</button>
+        <button class="key">WIN</button>
+        <button class="key">MENU</button>
+        <button class="key">CTRL</button>
+      </div>
+
+
+      <!-- Terminal Output -->
+      <div class="terminal">
+    </div>
+
+    <script>
+      const togglePassword = document.getElementById('toggle-password');
+      const passwordField = document.getElementById('password');
+
+      togglePassword.addEventListener('click', () => {
+        const type = passwordField.type === 'password' ? 'text' : 'password';
+        passwordField.type = type;
+        togglePassword.textContent = type === 'password' ? 'visibility_off' : 'visibility';
+      });
+
+      const loginButton = document.getElementById('login-button');
+      loginButton.addEventListener('click', () => {
+        const username = document.getElementById('username').value;
+        const password = passwordField.value;
+        if (username && password) {
+          alert('Logged in');
+          document.getElementById('login-container').style.display = 'none';
+          document.getElementById('welcome-container').style.display = 'block';
+        } else {
+          alert('Please enter username and password.');
+        }
+      });
+
+      const keys = document.querySelectorAll('.key');
+      keys.forEach(key => {
+        key.addEventListener('click', (e) => {
+          const keyValue = e.target.textContent;
+          console.log('Key pressed:', keyValue);
+        });
+      });
+
+      // Electron Backend Code to access System Stats and run PowerShell commands
+      const { ipcRenderer } = require('electron');
+
+      // Fetch system stats
+      ipcRenderer.on('cpu-usage', (event, cpuUsage) => {
+        document.getElementById('cpu-usage').textContent = `${cpuUsage}%`;
+      });
+
+      ipcRenderer.on('memory-usage', (event, memoryUsage) => {
+        document.getElementById('memory-usage').textContent = `${memoryUsage.used} GB / ${memoryUsage.total} GB`;
+      });
+
+      ipcRenderer.on('network-state', (event, networkState) => {
+        document.getElementById('network-state').textContent = networkState ? 'Online' : 'Offline';
+      });
+
+      ipcRenderer.on('disk-space', (event, diskSpace) => {
+        document.getElementById('disk-space').textContent = `${diskSpace.free} GB / ${diskSpace.total} GB`;
+      });
+
+      // Fetch IP Location
+      ipcRenderer.on('ip-location', (event, location) => {
+        document.getElementById('ip-info').textContent = location.ip;
+        document.getElementById('location-info').textContent = `${location.city}, ${location.region}, ${location.country}`;
+      });
+
+      // Terminal Input for PowerShell commands
+      const terminalInput = document.getElementById('terminal-input');
+      terminalInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          const command = terminalInput.value;
+          ipcRenderer.send('run-powershell-command', command);
+          terminalInput.value = ''; // Clear input
+        }
+      });
+
+      ipcRenderer.on('powershell-output', (event, output) => {
+        document.getElementById('output').textContent = output;
+      });
+
+      // Network Scanner Functionality
+      const scanButton = document.getElementById('scan-network');
+      scanButton.addEventListener('click', () => {
+        ipcRenderer.send('start-network-scan');
+      });
+
+      ipcRenderer.on('network-scan-results', (event, devices) => {
+        const devicesList = document.getElementById('devices-list');
+        devicesList.innerHTML = '';
+        devices.forEach(device => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `IP: ${device.ip}, Host: ${device.host}`;
+          devicesList.appendChild(listItem);
+        });
+      });
+    </script>
+</body>
+
+</html>
